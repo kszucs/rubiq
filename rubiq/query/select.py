@@ -1,20 +1,16 @@
-# -*- coding: utf-8 -*-
-
-"""
-SQL select query
-"""
+"""SQL select query"""
 
 from __future__ import absolute_import
 from ..sql.query import DataManipulationQuery
 from ..sql.base import SQL, SQLIterator
 from ..sql.name import F
 from ..sql.window import Window
-from ..utils import Const
 
 
 class BaseSelect(DataManipulationQuery):
-    """
-    Base class for SELECT-like queries (actual SELECT statements and set operations)
+    """Base class for SELECT-like queries
+
+    Actual SELECT statements and set operations.
     """
 
     def __init__(self):
@@ -79,10 +75,10 @@ class BaseSelect(DataManipulationQuery):
 
 class SELECT(BaseSelect):
 
-    DUP = Const('DUP', """Duplicate strategies""",
-        ALL=u'ALL ',
-        DISTINCT=u'DISTINCT ',
-    )
+    class DUP:
+        """Duplicate strategies"""
+        ALL = 'ALL '
+        DISTINCT = 'DISTINCT '
 
     def __init__(self, *columns):
         super(SELECT, self).__init__()
@@ -239,20 +235,18 @@ class SELECT(BaseSelect):
 
 
 class SelectSet(BaseSelect):
-    """
-    Wrapper for a set operation on SELECT statements
-    """
+    """Wrapper for a set operation on SELECT statements"""
 
-    OP = Const('OP', """Operators""",
-        UNION=u'UNION',
-        INTERSECT=u'INTERSECT',
-        EXCEPT=u'EXCEPT',
-    )
+    class OP:
+        """Operators"""
+        UNION = 'UNION'
+        INTERSECT = 'INTERSECT'
+        EXCEPT = 'EXCEPT'
 
-    DUP = Const('DUP', """Duplicate strategies""",
-        ALL=u'ALL ',
-        DISTINCT=u'DISTINCT ',
-    )
+    class DUP:
+        """Duplicate strategies"""
+        ALL = 'ALL '
+        DISTINCT = 'DISTINCT '
 
     def __init__(self, left, right, op):
         self.left = left

@@ -1,29 +1,25 @@
-# -*- coding: utf-8 -*-
-
-"""
-SQL sorting
-"""
+"""SQL sorting"""
 
 from __future__ import absolute_import
 from .base import SQL
-from ..utils import Const
-
+from enum import Enum
 
 class Sorting(SQL):
-    """
-    Sorting order on an expression
-    Sorting orders are no longer expressions, as they are not allowed in operations, only in ORDER BY clauses
+    """Sorting order on an expression
+
+    Sorting orders are no longer expressions, as they are not allowed in
+    operations, only in ORDER BY clauses.
     """
 
-    DIR = Const('DIR', """Sort direction""",
-        ASC=u' ASC',
-        DESC=u' DESC',
-    )
+    class DIR(Enum):
+        """Sort direction"""
+        ASC = ' ASC'
+        DESC = ' DESC'
 
-    NULLS = Const('NULLS', """NULL ordering""",
-        FIRST=u' NULLS FIRST',
-        LAST=u' NULLS LAST',
-    )
+    class NULLS(Enum):
+        """NULL ordering"""
+        FIRST = ' NULLS FIRST'
+        LAST = ' NULLS LAST'
 
     def __init__(self, expr, direction=None, nulls=None):
         self.expr = expr
@@ -36,8 +32,8 @@ class Sorting(SQL):
         sql, args = SQL.wrap(self.expr)._as_sql(connection, context)
         sql = u'{expr}{dir}{nulls}'.format(
             expr=sql,
-            dir='' if self.direction is None else self.direction,
-            nulls='' if self.nulls is None else self.nulls,
+            dir='' if self.direction is None else self.direction.value,
+            nulls='' if self.nulls is None else self.nulls.value,
         )
         return sql, args
 
