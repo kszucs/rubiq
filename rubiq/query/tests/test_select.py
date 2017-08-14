@@ -44,7 +44,8 @@ def test_expression():
 def test_expression_alias():
     sql = 'SELECT ((sum(qty) * avg(price)) * %s) AS average'
     args = (1.2,)
-    assert SELECT(A.average(F.sum(C.qty) * F.avg(C.price) * 1.2)) == (sql, args)
+    assert SELECT(A.average(F.sum(C.qty) * F.avg(C.price) * 1.2)
+                  ) == (sql, args)
 
 
 def test_subquery():
@@ -231,10 +232,12 @@ def test_in():
     args = (1, 2, 3)
     assert SELECT(IN(C.foo, (1, 2, 3))) == (sql, args)
 
+
 def test_not_in():
     sql = 'SELECT (foo NOT IN (%s, %s, %s))'
     args = (1, 2, 3)
     assert SELECT(NOT_IN(C.foo, (1, 2, 3))) == (sql, args)
+
 
 def test_is_null():
     assert SELECT(IS_NULL(C.foo)) == ('SELECT (foo IS NULL)', ())
@@ -249,7 +252,8 @@ def test_precedence():
 
 
 def test_parens():
-    assert SELECT((C.foo + C.bar) * C.baz) == ('SELECT ((foo + bar) * baz)', ())
+    assert SELECT((C.foo + C.bar) *
+                  C.baz) == ('SELECT ((foo + bar) * baz)', ())
 
 
 def test_distinct():

@@ -26,7 +26,8 @@ class Window(SQL):
         self.order = ORDER_BY
         self.range = RANGE
         self.rows = ROWS
-        assert (self.range is None) or (self.rows is None), 'Cannot specify both RANGE and ROWS frames'
+        assert (self.range is None) or (
+            self.rows is None), 'Cannot specify both RANGE and ROWS frames'
 
     def reference(self, offset, endpoint=None):
         if offset is None:
@@ -41,17 +42,20 @@ class Window(SQL):
         clauses = []
         args = ()
         if self.window:
-            window_sql, window_args = SQL.wrap(self.window, id=True)._as_sql(connection, context)
+            window_sql, window_args = SQL.wrap(
+                self.window, id=True)._as_sql(connection, context)
             clauses.append(window_sql)
             args += args
         if self.partition:
-            partition_sql, partition_args = SQLIterator(self.partition)._as_sql(connection, context)
+            partition_sql, partition_args = SQLIterator(
+                self.partition)._as_sql(connection, context)
             clauses.append('PARTITION BY {expr}'.format(
                 expr=partition_sql,
             ))
             args += partition_args
         if self.order:
-            order_sql, order_args = SQLIterator(self.order)._as_sql(connection, context)
+            order_sql, order_args = SQLIterator(
+                self.order)._as_sql(connection, context)
             clauses.append('ORDER BY {expr}'.format(
                 expr=order_sql,
             ))
@@ -67,7 +71,8 @@ class Window(SQL):
                 start, end = frame
             except TypeError:
                 # single value
-                start_sql, start_args = self.reference(frame, self.ENDPOINT.START)
+                start_sql, start_args = self.reference(
+                    frame, self.ENDPOINT.START)
                 clauses.append('{type} {start}'.format(
                     type=frame_type,
                     start=start_sql,
@@ -75,7 +80,8 @@ class Window(SQL):
                 args += start_args
             else:
                 # range
-                start_sql, start_args = self.reference(start, self.ENDPOINT.START)
+                start_sql, start_args = self.reference(
+                    start, self.ENDPOINT.START)
                 end_sql, end_args = self.reference(end, self.ENDPOINT.END)
                 clauses.append('{type} BETWEEN {start} AND {end}'.format(
                     type=frame_type,

@@ -18,9 +18,11 @@ def NameFactory(Class, prefix=None, as_sql=None, args=None, kwargs=None):
     kwargs = kwargs or {}
 
     def __getattr__(self, name):
-        return Class(prefix+name, *args, **kwargs)
+        return Class(prefix + name, *args, **kwargs)
+
     def __setattr__(self, name, value):
         raise AttributeError('Names are not assignable')
+
     def __call__(self, name):
         return getattr(self, name)
 
@@ -45,6 +47,7 @@ from .table import Table, Wildcard
 
 # prepare importable shorthand names for the various name factories
 T = TableFactory = NameFactory(Table)
-ONLY = NameFactory(Table, kwargs={ 'ONLY': True })
+ONLY = NameFactory(Table, kwargs={'ONLY': True})
 V = VariableFactory = NameFactory(Variable)
-C = F = IdentifierFactory = NameFactory(Identifier, as_sql=lambda self, connection, context: Wildcard()._as_sql(connection, context))
+C = F = IdentifierFactory = NameFactory(
+    Identifier, as_sql=lambda self, connection, context: Wildcard()._as_sql(connection, context))

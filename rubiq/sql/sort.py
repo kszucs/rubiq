@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from .base import SQL
 from enum import Enum
 
+
 class Sorting(SQL):
     """Sorting order on an expression
 
@@ -25,8 +26,10 @@ class Sorting(SQL):
         self.expr = expr
         self.direction = direction
         self.nulls = nulls
-        assert self.direction is None or self.direction in self.DIR, 'Invalid sorting direction: {dir}'.format(dir=self.direction)
-        assert self.nulls is None or self.nulls in self.NULLS, 'Invalid sorting of nulls: {nulls}'.format(nulls=self.nulls)
+        assert self.direction is None or self.direction in self.DIR, 'Invalid sorting direction: {dir}'.format(
+            dir=self.direction)
+        assert self.nulls is None or self.nulls in self.NULLS, 'Invalid sorting of nulls: {nulls}'.format(
+            nulls=self.nulls)
 
     def _as_sql(self, connection, context):
         sql, args = SQL.wrap(self.expr)._as_sql(connection, context)
@@ -47,5 +50,8 @@ class Sorting(SQL):
         self.nulls = self.NULLS.LAST
         return self
 
+
 def ASC(expr): return Sorting(expr, direction=Sorting.DIR.ASC)
+
+
 def DESC(expr): return Sorting(expr, direction=Sorting.DIR.DESC)

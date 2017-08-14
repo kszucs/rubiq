@@ -20,8 +20,10 @@ class Alias(SQL):
         self._alias = alias
 
     def _as_sql(self, connection, context):
-        origin_sql, origin_args = SQL.wrap(self._origin)._as_sql(connection, context)
-        alias_sql, alias_args = SQL.wrap(self._alias, id=True)._as_sql(connection, context)
+        origin_sql, origin_args = SQL.wrap(
+            self._origin)._as_sql(connection, context)
+        alias_sql, alias_args = SQL.wrap(
+            self._alias, id=True)._as_sql(connection, context)
         sql = u'{origin} AS {alias}'.format(
             origin=origin_sql,
             alias=alias_sql,
@@ -45,14 +47,17 @@ class TableAlias(Alias, Joinable):
         ))
 
     def _as_sql(self, connection, context):
-        origin_sql, origin_args = SQL.wrap(self._origin)._as_sql(connection, context)
-        alias_sql, alias_args = SQL.wrap(self._alias, id=True)._as_sql(connection, context)
+        origin_sql, origin_args = SQL.wrap(
+            self._origin)._as_sql(connection, context)
+        alias_sql, alias_args = SQL.wrap(
+            self._alias, id=True)._as_sql(connection, context)
         sql = u'{origin} AS {alias}'.format(
             origin=origin_sql,
             alias=alias_sql,
         )
         if self._columns:
-            columns_sql, columns_args = SQLIterator(self._columns, id=True)._as_sql(connection, context)
+            columns_sql, columns_args = SQLIterator(
+                self._columns, id=True)._as_sql(connection, context)
             sql += '({columns})'.format(columns=columns_sql)
         else:
             columns_args = ()
@@ -69,15 +74,18 @@ class SubqueryAlias(TableAlias):
         self._lateral = LATERAL or False
 
     def _as_sql(self, connection, context):
-        origin_sql, origin_args = SQL.wrap(self._origin)._as_sql(connection, context)
-        alias_sql, alias_args = SQL.wrap(self._alias, id=True)._as_sql(connection, context)
+        origin_sql, origin_args = SQL.wrap(
+            self._origin)._as_sql(connection, context)
+        alias_sql, alias_args = SQL.wrap(
+            self._alias, id=True)._as_sql(connection, context)
         sql = u'{lateral}({origin}) AS {alias}'.format(
             lateral=u'LATERAL ' if self._lateral else u'',
             origin=origin_sql,
             alias=alias_sql,
         )
         if self._columns:
-            columns_sql, columns_args = SQLIterator(self._columns, id=True)._as_sql(connection, context)
+            columns_sql, columns_args = SQLIterator(
+                self._columns, id=True)._as_sql(connection, context)
             sql += '({columns})'.format(columns=columns_sql)
         else:
             columns_args = ()
@@ -91,8 +99,10 @@ class AliasFactory(object):
 
     def __getattribute__(self, name):
         return AliasName(name)
+
     def __setattr__(self, name, value):
         raise AttributeError('Alias names are not assignable')
+
     def __call__(self, name, expr):
         return AliasName(name)(expr)
 
@@ -115,6 +125,7 @@ class AliasName(object):
             return SubqueryAlias(expr, self.name, *args, **kwargs)
         else:
             return Alias(expr, self.name, *args, **kwargs)
+
 
 A = AliasFactory()
 

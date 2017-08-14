@@ -12,19 +12,23 @@ class Joinable(SQL):
         return CrossJoin(self, other, *args, **kwargs)
 
     def LEFT_JOIN(self, other, *args, **kwargs):
-        JoinClass = NaturalJoin if kwargs.pop('NATURAL', False) else ConditionalJoin
+        JoinClass = NaturalJoin if kwargs.pop(
+            'NATURAL', False) else ConditionalJoin
         return JoinClass(self, other, type=Join.TYPE.LEFT, *args, **kwargs)
 
     def RIGHT_JOIN(self, other, *args, **kwargs):
-        JoinClass = NaturalJoin if kwargs.pop('NATURAL', False) else ConditionalJoin
+        JoinClass = NaturalJoin if kwargs.pop(
+            'NATURAL', False) else ConditionalJoin
         return JoinClass(self, other, type=Join.TYPE.RIGHT, *args, **kwargs)
 
     def FULL_JOIN(self, other, *args, **kwargs):
-        JoinClass = NaturalJoin if kwargs.pop('NATURAL', False) else ConditionalJoin
+        JoinClass = NaturalJoin if kwargs.pop(
+            'NATURAL', False) else ConditionalJoin
         return JoinClass(self, other, type=Join.TYPE.FULL, *args, **kwargs)
 
     def INNER_JOIN(self, other, *args, **kwargs):
-        JoinClass = NaturalJoin if kwargs.pop('NATURAL', False) else ConditionalJoin
+        JoinClass = NaturalJoin if kwargs.pop(
+            'NATURAL', False) else ConditionalJoin
         return JoinClass(self, other, type=Join.TYPE.INNER, *args, **kwargs)
 
 
@@ -108,7 +112,8 @@ class Join(Joinable):
         self.left = left
         self.right = right
         self.parens = True if parens is None else parens
-        assert isinstance(self.left, Joinable) and isinstance(self.right, Joinable), 'Invalid join sources'
+        assert isinstance(self.left, Joinable) and isinstance(
+            self.right, Joinable), 'Invalid join sources'
 
 
 class QualifiedJoin(Join):
@@ -117,7 +122,8 @@ class QualifiedJoin(Join):
     def __init__(self, left, right, parens=None, type=None):
         super(QualifiedJoin, self).__init__(left, right, parens=parens)
         self.type = type
-        assert self.type in Join.TYPE, 'Invalid join type: {type}'.format(type=self.type)
+        assert self.type in Join.TYPE, 'Invalid join type: {type}'.format(
+            type=self.type)
 
 
 class CrossJoin(Join):
@@ -152,20 +158,25 @@ class NaturalJoin(QualifiedJoin):
 class ConditionalJoin(QualifiedJoin):
 
     def __init__(self, left, right, parens=None, type=None, ON=None, USING=None):
-        super(ConditionalJoin, self).__init__(left, right, parens=parens, type=type)
+        super(ConditionalJoin, self).__init__(
+            left, right, parens=parens, type=type)
         self.on = ON
         if USING is not None and not isinstance(USING, (list, tuple)):
             using = USING,
         self.using = USING
-        assert (self.on is None or self.using is None), 'Cannot have both ON and USING clauses on a join'
-        assert not (self.on is None and self.using is None), 'Either ON or USING clause is required for conditional join'
+        assert (
+            self.on is None or self.using is None), 'Cannot have both ON and USING clauses on a join'
+        assert not (
+            self.on is None and self.using is None), 'Either ON or USING clause is required for conditional join'
 
     def _as_sql(self, connection, context):
         if self.on:
-            expr_sql, condition_args = SQL.wrap(self.on)._as_sql(connection, context)
+            expr_sql, condition_args = SQL.wrap(
+                self.on)._as_sql(connection, context)
             condition_sql = 'ON {expression}'.format(expression=expr_sql)
         else:
-            columns_sql, condition_args = SQLIterator(self.using)._as_sql(connection, context)
+            columns_sql, condition_args = SQLIterator(
+                self.using)._as_sql(connection, context)
             condition_sql = 'USING ({columns})'.format(columns=columns_sql)
         left_sql, left_args = self.left._as_sql(connection, context)
         right_sql, right_args = self.right._as_sql(connection, context)

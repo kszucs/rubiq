@@ -26,6 +26,7 @@ class DummyConnection(object):
         """
         return NotImplemented
 
+
 dummy_connection = DummyConnection()
 
 
@@ -36,6 +37,7 @@ class DummyContext(object):
 
     def __getitem__(self, name):
         return DummyVariable(name)
+
 
 dummy_context = DummyContext()
 

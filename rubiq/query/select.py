@@ -20,8 +20,12 @@ class BaseSelect(DataManipulationQuery):
 
     # set operations
     def __or__(self, other): return SelectSet(self, other, SelectSet.OP.UNION)
-    def __and__(self, other): return SelectSet(self, other, SelectSet.OP.INTERSECT)
-    def __sub__(self, other): return SelectSet(self, other, SelectSet.OP.EXCEPT)
+
+    def __and__(self, other): return SelectSet(
+        self, other, SelectSet.OP.INTERSECT)
+
+    def __sub__(self, other): return SelectSet(
+        self, other, SelectSet.OP.EXCEPT)
 
     def ORDER_BY(self, *exprs):
         self.order = exprs or None
@@ -40,14 +44,16 @@ class BaseSelect(DataManipulationQuery):
         """
         Return count of rows in result
         """
-        cursor = SELECT(F.count()).source(self.set).execute(connection, **context)
+        cursor = SELECT(F.count()).source(
+            self.set).execute(connection, **context)
         return cursor.fetchone()[0]
 
     def total_count(self, connection, **context):
         """
         Return total count of rows in result with no limits applied
         """
-        cursor = SELECT(F.count()).source(self.copy().limit(None, None)).execute(connection, **context)
+        cursor = SELECT(F.count()).source(self.copy().limit(
+            None, None)).execute(connection, **context)
         return cursor.fetchone()[0]
 
     def _order_limit_as_sql(self, connection, context):
@@ -57,15 +63,18 @@ class BaseSelect(DataManipulationQuery):
         sql = ''
         args = ()
         if self.order is not None:
-            order_sql, order_args = SQLIterator(self.order)._as_sql(connection, context)
+            order_sql, order_args = SQLIterator(
+                self.order)._as_sql(connection, context)
             sql += u' ORDER BY {order}'.format(order=order_sql)
             args += order_args
         if self.limit is not None:
-            limit_sql, limit_args = SQL.wrap(self.limit)._as_sql(connection, context)
+            limit_sql, limit_args = SQL.wrap(
+                self.limit)._as_sql(connection, context)
             sql += u' LIMIT {limit}'.format(limit=limit_sql)
             args += limit_args
             if self.offset is not None:
-                offset_sql, offset_args = SQL.wrap(self.offset)._as_sql(connection, context)
+                offset_sql, offset_args = SQL.wrap(
+                    self.offset)._as_sql(connection, context)
                 sql += u' OFFSET {offset}'.format(offset=offset_sql)
                 args += offset_args
         else:
@@ -101,7 +110,8 @@ class SELECT(BaseSelect):
 
     def _as_sql(self, connection, context):
         if self.dup is not None:
-            dup_sql, dup_args = SQLIterator(self.dup_columns)._as_sql(connection, context)
+            dup_sql, dup_args = SQLIterator(
+                self.dup_columns)._as_sql(connection, context)
             dup_sql = u'{dup}{on}'.format(
                 dup=self.dup,
                 on=u'ON ({expr}) '.format(expr=dup_sql) if dup_sql else u'',
@@ -111,7 +121,8 @@ class SELECT(BaseSelect):
             dup_args = ()
 
         if self.columns:
-            columns_sql, columns_args = SQLIterator(self.columns)._as_sql(connection, context)
+            columns_sql, columns_args = SQLIterator(
+                self.columns)._as_sql(connection, context)
         else:
             columns_sql = u'*'
             columns_args = ()
@@ -129,7 +140,8 @@ class SELECT(BaseSelect):
         if self.windows:
             windows = []
             for name, window in sorted(self.windows):
-                alias_sql, alias_args = SQL.wrap(name, id=True)._as_sql(connection, context)
+                alias_sql, alias_args = SQL.wrap(
+                    name, id=True)._as_sql(connection, context)
                 window_sql, window_args = window._as_sql(connection, context)
                 windows.append(u'{name} AS {window}'.format(
                     name=alias_sql,
@@ -139,12 +151,14 @@ class SELECT(BaseSelect):
             sql += u' WINDOW {windows}'.format(
                 windows=', '.join(windows),
             )
-        order_limit_sql, order_limit_args = self._order_limit_as_sql(connection, context)
+        order_limit_sql, order_limit_args = self._order_limit_as_sql(
+            connection, context)
         sql += order_limit_sql
         args += order_limit_args
 
         if self.cte:
-            cte_sql, cte_args = SQLIterator(self.cte)._as_sql(connection, context)
+            cte_sql, cte_args = SQLIterator(
+                self.cte)._as_sql(connection, context)
             sql = u'WITH {cte} {query}'.format(
                 cte=cte_sql,
                 query=sql,
@@ -271,7 +285,8 @@ class SelectSet(BaseSelect):
             right=right_sql,
         )
         args = left_args + right_args
-        order_limit_sql, order_limit_args = self._order_limit_as_sql(connection, context)
+        order_limit_sql, order_limit_args = self._order_limit_as_sql(
+            connection, context)
         sql += order_limit_sql
         args += order_limit_args
         return sql, args
@@ -304,19 +319,22 @@ class From(SQL):
             source=sql,
         )
         if self.where:
-            where_sql, where_args = SQL.wrap(self.where)._as_sql(connection, context)
+            where_sql, where_args = SQL.wrap(
+                self.where)._as_sql(connection, context)
             sql += u' WHERE {condition}'.format(
                 condition=where_sql,
             )
             args += where_args
         if self.group_by:
-            group_sql, group_args = SQLIterator(self.group_by)._as_sql(connection, context)
+            group_sql, group_args = SQLIterator(
+                self.group_by)._as_sql(connection, context)
             sql += u' GROUP BY {columns}'.format(
                 columns=group_sql,
             )
             args += group_args
         if self.having:
-            having_sql, having_args = SQL.wrap(self.having)._as_sql(connection, context)
+            having_sql, having_args = SQL.wrap(
+                self.having)._as_sql(connection, context)
             sql += u' HAVING {condition}'.format(
                 condition=having_sql,
             )
@@ -388,7 +406,8 @@ class CTE(SQL):
         self.recursive = RECURSIVE
 
     def _as_sql(self, connection, context):
-        name_sql, name_args = SQL.wrap(self.name, id=True)._as_sql(connection, context)
+        name_sql, name_args = SQL.wrap(
+            self.name, id=True)._as_sql(connection, context)
         query_sql, query_args = self.query._as_sql(connection, context)
         sql = u'{name} AS ({query})'.format(
             name=name_sql,
