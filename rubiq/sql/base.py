@@ -1,30 +1,25 @@
-# -*- coding: utf-8 -*-
-
-"""
-SQL base syntax
-"""
-
-from __future__ import absolute_import
+"""SQL base syntax"""
 
 
-class SQL(object):
-    """
-    Base for classes that can be rendered as SQL
+class SQL:
+    """Base for classes that can be rendered as SQL
+
     Used as a wrapper for primitive values (values and identifiers)
     """
 
     @staticmethod
     def merge(iterable, sep=', '):
-        """
-        Merge an interable of (sql, args) items into a single (sql, args) tuple
-        The `sql` strings will be joind using `sep`
+        """Merge an interable of (sql, args) items.
+
+        Returns a single (sql, args) tuple, where the `sql` strings will be
+        joined using `sep` argument.
         """
 
         if iterable is None:
-            return u'', ()
+            return '', ()
         iterable = list(iterable)
         if not len(iterable):
-            return u'', ()
+            return '', ()
         sql, args = zip(*iterable)
         sql = sep.join(sql)
         args = sum(args, ())
@@ -32,13 +27,13 @@ class SQL(object):
 
     @classmethod
     def wrap(cls, value, id=False):
-        """
-        Instantiate a `SQL` or `Identifier` instance if `value` is plain
-        """
+        """Instantiate a `SQL` or `Identifier` instance if `value` is plain"""
         if isinstance(value, SQL):
-            # value is already an instance of SQL
-            return value
-        return Identifier(value) if id else Value(value)
+            return value  # value is already an instance of SQL
+        elif id:
+            return Identifier(value)
+        else:
+            return Value(value)
 
     def _as_sql(self, connection, context):
         raise NotImplementedError()
@@ -49,7 +44,7 @@ class SQL(object):
 
     def __repr__(self):
         sql, args = self._as_sql(dummy_connection, dummy_context)
-        return u'<{name} {sql!r}, {args!r}>'.format(
+        return '<{name} {sql!r}, {args!r}>'.format(
             name=self.__class__.__name__,
             sql=sql,
             args=args,
@@ -57,10 +52,7 @@ class SQL(object):
 
 
 class SQLIterator(SQL):
-
-    """
-    Iterator of SQL objects
-    """
+    """Iterator of SQL objects"""
 
     def __init__(self, iterable, sep=', ', id=False):
         self.iterable = iterable
@@ -75,8 +67,8 @@ class SQLIterator(SQL):
         for item in self.iterable:
             yield SQL.wrap(item, id=self.id)
 
-    def iter(self):
-        return self.__iter__()
+    # def iter(self):
+    #     return self.__iter__()
 
     def _as_sql(self, connection, context):
         return SQL.merge((item._as_sql(connection, context) for item in self), sep=self.sep)

@@ -5,6 +5,7 @@ from ..sql.query import DataManipulationQuery
 from ..sql.base import SQL, SQLIterator
 from ..sql.name import F
 from ..sql.window import Window
+from enum import Enum
 
 
 class BaseSelect(DataManipulationQuery):
@@ -84,13 +85,13 @@ class BaseSelect(DataManipulationQuery):
 
 class SELECT(BaseSelect):
 
-    class DUP:
+    class DUP(Enum):
         """Duplicate strategies"""
         ALL = 'ALL '
         DISTINCT = 'DISTINCT '
 
     def __init__(self, *columns):
-        super(SELECT, self).__init__()
+        super().__init__()
         self.dup = None
         self.dup_columns = None
         self.columns = list(columns)
@@ -113,7 +114,7 @@ class SELECT(BaseSelect):
             dup_sql, dup_args = SQLIterator(
                 self.dup_columns)._as_sql(connection, context)
             dup_sql = u'{dup}{on}'.format(
-                dup=self.dup,
+                dup=self.dup.value,
                 on=u'ON ({expr}) '.format(expr=dup_sql) if dup_sql else u'',
             )
         else:
@@ -251,13 +252,13 @@ class SELECT(BaseSelect):
 class SelectSet(BaseSelect):
     """Wrapper for a set operation on SELECT statements"""
 
-    class OP:
+    class OP(Enum):
         """Operators"""
         UNION = 'UNION'
         INTERSECT = 'INTERSECT'
         EXCEPT = 'EXCEPT'
 
-    class DUP:
+    class DUP(Enum):
         """Duplicate strategies"""
         ALL = 'ALL '
         DISTINCT = 'DISTINCT '
@@ -280,8 +281,8 @@ class SelectSet(BaseSelect):
             right_sql = u'({sql})'.format(sql=right_sql)
         sql = u'{left} {op} {dup}{right}'.format(
             left=left_sql,
-            op=self.op,
-            dup=self.dup or '',
+            op=self.op.value if self.op else '',
+            dup=self.dup.value if self.dup else '',
             right=right_sql,
         )
         args = left_args + right_args
@@ -303,9 +304,7 @@ class SelectSet(BaseSelect):
 
 
 class From(SQL):
-    """
-    FROM clause wrapper
-    """
+    """FROM clause wrapper"""
 
     def __init__(self, source):
         self.source = source
@@ -374,16 +373,12 @@ class From(SQL):
         return self
 
     def WHERE(self, expr):
-        """
-        Set up a WHERE clause
-        """
+        """Set up a WHERE clause"""
         self.where = expr
         return self
 
     def GROUP_BY(self, *columns):
-        """
-        Set up a GROUP BY clause
-        """
+        """Set up a GROUP BY clause"""
         self.group_by = columns
         return self
 
@@ -396,9 +391,7 @@ class From(SQL):
 
 
 class CTE(SQL):
-    """
-    Wrapper for common table expressions
-    """
+    """Wrapper for common table expressions"""
 
     def __init__(self, name, query, RECURSIVE=False):
         self.name = name

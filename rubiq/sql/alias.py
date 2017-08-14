@@ -1,19 +1,12 @@
-# -*- coding: utf-8 -*-
+"""SQL aliases"""
 
-"""
-SQL aliases
-"""
-
-from __future__ import absolute_import
 from .base import SQL, SQLIterator
 from .table import Joinable, Table
 from .query import Query
 
 
 class Alias(SQL):
-    """
-    Alias of an expression
-    """
+    """Alias of an expression"""
 
     def __init__(self, origin, alias):
         self._origin = origin
@@ -24,7 +17,7 @@ class Alias(SQL):
             self._origin)._as_sql(connection, context)
         alias_sql, alias_args = SQL.wrap(
             self._alias, id=True)._as_sql(connection, context)
-        sql = u'{origin} AS {alias}'.format(
+        sql = '{origin} AS {alias}'.format(
             origin=origin_sql,
             alias=alias_sql,
         )
@@ -32,9 +25,7 @@ class Alias(SQL):
 
 
 class TableAlias(Alias, Joinable):
-    """
-    Alias of a table
-    """
+    """Alias of a table"""
 
     def __init__(self, origin, alias, columns=None):
         super(TableAlias, self).__init__(origin, alias)
@@ -51,7 +42,7 @@ class TableAlias(Alias, Joinable):
             self._origin)._as_sql(connection, context)
         alias_sql, alias_args = SQL.wrap(
             self._alias, id=True)._as_sql(connection, context)
-        sql = u'{origin} AS {alias}'.format(
+        sql = '{origin} AS {alias}'.format(
             origin=origin_sql,
             alias=alias_sql,
         )
@@ -65,12 +56,10 @@ class TableAlias(Alias, Joinable):
 
 
 class SubqueryAlias(TableAlias):
-    """
-    Alias of a subquery
-    """
+    """Alias of a subquery"""
 
     def __init__(self, origin, alias, columns=None, LATERAL=None):
-        super(SubqueryAlias, self).__init__(origin, alias, columns=columns)
+        super().__init__(origin, alias, columns=columns)
         self._lateral = LATERAL or False
 
     def _as_sql(self, connection, context):
@@ -78,8 +67,8 @@ class SubqueryAlias(TableAlias):
             self._origin)._as_sql(connection, context)
         alias_sql, alias_args = SQL.wrap(
             self._alias, id=True)._as_sql(connection, context)
-        sql = u'{lateral}({origin}) AS {alias}'.format(
-            lateral=u'LATERAL ' if self._lateral else u'',
+        sql = '{lateral}({origin}) AS {alias}'.format(
+            lateral='LATERAL ' if self._lateral else '',
             origin=origin_sql,
             alias=alias_sql,
         )
@@ -92,10 +81,8 @@ class SubqueryAlias(TableAlias):
         return sql, origin_args + alias_args + columns_args
 
 
-class AliasFactory(object):
-    """
-    Factory for alias names
-    """
+class AliasFactory:
+    """Factory for alias names"""
 
     def __getattribute__(self, name):
         return AliasName(name)
@@ -107,18 +94,14 @@ class AliasFactory(object):
         return AliasName(name)(expr)
 
 
-class AliasName(object):
-    """
-    Wrapper for an alias name
-    """
+class AliasName:
+    """Wrapper for an alias name"""
 
     def __init__(self, name):
         self.name = name
 
     def __call__(self, expr, *args, **kwargs):
-        """
-        Create the alias
-        """
+        """Create the alias"""
         if isinstance(expr, Table):
             return TableAlias(expr, self.name, *args, **kwargs)
         elif isinstance(expr, Query):

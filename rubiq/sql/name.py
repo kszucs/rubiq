@@ -1,17 +1,8 @@
-# -*- coding: utf-8 -*-
-
-"""
-SQL name factories
-"""
-
-from __future__ import absolute_import
 from .base import SQL
 
 
 def NameFactory(Class, prefix=None, as_sql=None, args=None, kwargs=None):
-    """
-    Factory that returns a new class that converts attribute access to Class instances
-    """
+    """Returns a new class that converts attribute access to Class instances"""
 
     prefix = prefix or ''
     args = args or ()

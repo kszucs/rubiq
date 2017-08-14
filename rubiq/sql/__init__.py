@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-SQL syntax
-"""
+"""SQL syntax"""
 
 from __future__ import absolute_import
 from .base import SQL

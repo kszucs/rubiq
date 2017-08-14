@@ -320,7 +320,7 @@ class UnaryPostfixOperator(UnaryOperator):
     def __init__(self, operand, op, invert=False):
         if invert:
             op = 'NOT ' + op
-        super(UnaryPostfixOperator, self).__init__(op, operand)
+        super().__init__(op, operand)
 
     def _as_sql(self, connection, context):
         override = connection.operator_to_sql(
@@ -342,7 +342,7 @@ class InOperator(BinaryOperator):
     """
 
     def __init__(self, left, right, invert=False):
-        super(InOperator, self).__init__(left, 'IN', right, invert=invert)
+        super().__init__(left, 'IN', right, invert=invert)
 
     def right_to_sql(self, connection, context):
         sql, args = SQLIterator(self.right)._as_sql(connection, context)

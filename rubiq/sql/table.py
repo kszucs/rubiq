@@ -120,7 +120,7 @@ class QualifiedJoin(Join):
     """Abstract base class for qualified joins"""
 
     def __init__(self, left, right, parens=None, type=None):
-        super(QualifiedJoin, self).__init__(left, right, parens=parens)
+        super().__init__(left, right, parens=parens)
         self.type = type
         assert self.type in Join.TYPE, 'Invalid join type: {type}'.format(
             type=self.type)
@@ -158,8 +158,7 @@ class NaturalJoin(QualifiedJoin):
 class ConditionalJoin(QualifiedJoin):
 
     def __init__(self, left, right, parens=None, type=None, ON=None, USING=None):
-        super(ConditionalJoin, self).__init__(
-            left, right, parens=parens, type=type)
+        super().__init__(left, right, parens=parens, type=type)
         self.on = ON
         if USING is not None and not isinstance(USING, (list, tuple)):
             using = USING,
