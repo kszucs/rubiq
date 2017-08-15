@@ -20,13 +20,14 @@ class BaseSelect(DataManipulationQuery):
         self.offset = None
 
     # set operations
-    def __or__(self, other): return SelectSet(self, other, SelectSet.OP.UNION)
+    def __or__(self, other):
+        return SelectSet(self, other, SelectSet.OP.UNION)
 
-    def __and__(self, other): return SelectSet(
-        self, other, SelectSet.OP.INTERSECT)
+    def __and__(self, other):
+        return SelectSet(self, other, SelectSet.OP.INTERSECT)
 
-    def __sub__(self, other): return SelectSet(
-        self, other, SelectSet.OP.EXCEPT)
+    def __sub__(self, other):
+        return SelectSet(self, other, SelectSet.OP.EXCEPT)
 
     def ORDER_BY(self, *exprs):
         self.order = exprs or None
@@ -374,18 +375,19 @@ class From(SQL):
 
     def WHERE(self, expr):
         """Set up a WHERE clause"""
+
         self.where = expr
         return self
 
     def GROUP_BY(self, *columns):
         """Set up a GROUP BY clause"""
+        # if isinstnace(Alias, expr) then use expr._alias
         self.group_by = columns
         return self
 
     def HAVING(self, expr):
-        """
-        Set up a HAVING clause
-        """
+        """Set up a HAVING clause"""
+        # if isinstnace(Alias, expr) then use expr._alias
         self.having = expr
         return self
 

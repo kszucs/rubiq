@@ -81,19 +81,6 @@ class SubqueryAlias(TableAlias):
         return sql, origin_args + alias_args + columns_args
 
 
-class AliasFactory:
-    """Factory for alias names"""
-
-    def __getattribute__(self, name):
-        return AliasName(name)
-
-    def __setattr__(self, name, value):
-        raise AttributeError('Alias names are not assignable')
-
-    def __call__(self, name, expr):
-        return AliasName(name)(expr)
-
-
 class AliasName:
     """Wrapper for an alias name"""
 
@@ -108,6 +95,19 @@ class AliasName:
             return SubqueryAlias(expr, self.name, *args, **kwargs)
         else:
             return Alias(expr, self.name, *args, **kwargs)
+
+
+class AliasFactory:
+    """Factory for alias names"""
+
+    def __getattribute__(self, name):
+        return AliasName(name)
+
+    def __setattr__(self, name, value):
+        raise AttributeError('Alias names are not assignable')
+
+    def __call__(self, name, expr):
+        return AliasName(name)(expr)
 
 
 A = AliasFactory()

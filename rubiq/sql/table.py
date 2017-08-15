@@ -190,5 +190,24 @@ class ConditionalJoin(QualifiedJoin):
         return sql, left_args + right_args + condition_args
 
 
-from .name import NameFactory
 from .expression import Identifier
+from .name import NameFactory
+
+
+class TableFactory:
+
+    def __init__(self, ONLY=False):
+        super().__setattr__('ONLY', ONLY)
+
+    def __getattr__(self, name):
+        return Table(name, ONLY=self.ONLY)
+
+    def __setattr__(self, name, value):
+        raise AttributeError('Tables are not assignable')
+
+    def __call__(self, name):
+        return getattr(self, name)
+
+
+T = TableFactory()
+ONLY = TableFactory(ONLY=True)

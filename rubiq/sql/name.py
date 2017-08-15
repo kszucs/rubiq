@@ -1,6 +1,7 @@
 from .base import SQL
 
 
+# this could be a metaclass
 def NameFactory(Class, prefix=None, as_sql=None, args=None, kwargs=None):
     """Returns a new class that converts attribute access to Class instances"""
 
@@ -37,8 +38,6 @@ from .expression import Variable, Identifier
 from .table import Table, Wildcard
 
 # prepare importable shorthand names for the various name factories
-T = TableFactory = NameFactory(Table)
-ONLY = NameFactory(Table, kwargs={'ONLY': True})
-V = VariableFactory = NameFactory(Variable)
+
 C = F = IdentifierFactory = NameFactory(
     Identifier, as_sql=lambda self, connection, context: Wildcard()._as_sql(connection, context))

@@ -2,126 +2,67 @@
 
 from __future__ import absolute_import
 from .base import SQL, SQLIterator
-# from ..utils import Const
+from enum import Enum
 
 
 class Expression(SQL):
     """Wrapper for an expression"""
 
     def __lt__(self, other): return BinaryOperator(self, '<', other)
-
     def __le__(self, other): return BinaryOperator(self, '<=', other)
-
     def __eq__(self, other): return BinaryOperator(self, '=', other)
-
     def __ne__(self, other): return BinaryOperator(self, '<>', other)
-
     def __gt__(self, other): return BinaryOperator(self, '>', other)
-
     def __ge__(self, other): return BinaryOperator(self, '>=', other)
-
     def __add__(self, other): return BinaryOperator(self, '+', other)
-
     def __sub__(self, other): return BinaryOperator(self, '-', other)
-
     def __mul__(self, other): return BinaryOperator(self, '*', other)
-
     def __div__(self, other): return BinaryOperator(self, '/', other)
-
     def __truediv__(self, other): return BinaryOperator(self, '/', other)
-
     def __floordiv__(self, other): return BinaryOperator(self, '/', other)
-
     def __mod__(self, other): return FunctionCall('mod', self, other)
-
     def __pow__(self, other): return FunctionCall('power', self, other)
-
     def __lshift__(self, other): return BinaryOperator(self, '<<', other)
-
     def __rshift__(self, other): return BinaryOperator(self, '>>', other)
-
     def __and__(self, other): return BinaryOperator(self, '&', other)
-
     def __xor__(self, other): return BinaryOperator(self, '^', other)
-
     def __or__(self, other): return BinaryOperator(self, '|', other)
-
     def __radd__(self, other): return BinaryOperator(other, '+', self)
-
     def __rsub__(self, other): return BinaryOperator(other, '-', self)
-
     def __rmul__(self, other): return BinaryOperator(other, '*', self)
-
     def __rdiv__(self, other): return BinaryOperator(other, '/', self)
-
     def __rtruediv__(self, other): return BinaryOperator(other, '/', self)
-
     def __rfloordiv__(self, other): return BinaryOperator(other, '/', self)
-
     def __rmod__(self, other): return FunctionCall('mod', other, self)
-
     def __rpow__(self, other): return FunctionCall('power', other, self)
-
     def __rlshift__(self, other): return BinaryOperator(other, '<<', self)
-
     def __rrshift__(self, other): return BinaryOperator(other, '>>', self)
-
     def __rand__(self, other): return BinaryOperator(other, '&', self)
-
     def __rxor__(self, other): return BinaryOperator(other, '^', self)
-
     def __ror__(self, other): return BinaryOperator(other, '|', self)
-
     def __neg__(self): return UnaryOperator('-', self)
-
     def __pos__(self): return UnaryOperator('+', self)
-
     def __abs__(self): return FunctionCall('abs', self)
-
     def __invert__(self): return UnaryOperator('~', self)
 
 
 # boolean operators
 def AND(*exprs): return ChainOperator(exprs, 'AND')
-
-
 def XOR(*exprs): return ChainOperator(exprs, 'XOR')
-
-
 def OR(*exprs): return ChainOperator(exprs, 'OR')
-
-
 def NOT(expr): return UnaryOperator('NOT', expr)
 
 
 # common SQL operators
 def LIKE(left, right): return BinaryOperator(left, 'LIKE', right)
-
-
 def NOT_LIKE(left, right): return BinaryOperator(left, 'NOT LIKE', right)
-
-
 def ILIKE(left, right): return BinaryOperator(left, 'ILIKE', right)
-
-
 def NOT_ILIKE(left, right): return BinaryOperator(left, 'NOT ILIKE', right)
-
-
 def RLIKE(left, right): return BinaryOperator(left, 'RLIKE', right)
-
-
 def NOT_RLIKE(left, right): return BinaryOperator(left, 'NOT RLIKE', right)
-
-
 def IN(left, right): return InOperator(left, right)
-
-
 def NOT_IN(left, right): return InOperator(left, right, invert=True)
-
-
 def IS_NULL(expr): return UnaryPostfixOperator(expr, 'IS NULL')
-
-
 def IS_NOT_NULL(expr): return UnaryPostfixOperator(expr, 'IS NOT NULL')
 
 
@@ -151,6 +92,18 @@ class Variable(Expression):
 
     def __repr__(self):
         return '<Variable {name!r}>'.format(name=self.name)
+
+
+class VariableFactory:
+
+    def __getattr__(self, name):
+        return Variable(name)
+
+    def __setattr__(self, name, value):
+        raise AttributeError('Variables are not assignable')
+
+    def __call__(self, name):
+        return getattr(self, name)
 
 
 class Identifier(Expression):
@@ -190,7 +143,7 @@ class Identifier(Expression):
 class FunctionCall(Expression):
     """Function call wrapper"""
 
-    class DUP:
+    class DUP(Enum):
         ALL = 'ALL '
         DISTINCT = 'DISTINCT '
 
@@ -204,7 +157,7 @@ class FunctionCall(Expression):
         sql, args = SQLIterator(self.params)._as_sql(connection, context)
         sql = '{name}({dup}{params})'.format(
             name=connection.quote_function_name(self.name),
-            dup=self.dup or '',
+            dup=self.dup.value if self.dup else '',
             params=sql,
         )
         return sql, args
@@ -242,9 +195,7 @@ class WindowFunctionCall(FunctionCall):
 
 
 class ChainOperator(Expression):
-    """
-    Chain of similar operations (e.g. `a OP b OP c OP d ...`)
-    """
+    """Chain of similar operations (e.g. `a OP b OP c OP d ...`)"""
 
     def __init__(self, expressions, op):
         op = ' {op} '.format(op=op)
@@ -257,9 +208,7 @@ class ChainOperator(Expression):
 
 
 class BinaryOperator(Expression):
-    """
-    Wrapper for a generic binary operator
-    """
+    """Wrapper for a generic binary operator"""
 
     def __init__(self, left, op, right, invert=False):
         if invert:
@@ -337,9 +286,7 @@ class UnaryPostfixOperator(UnaryOperator):
 
 
 class InOperator(BinaryOperator):
-    """
-    Wrapper for IN operator
-    """
+    """Wrapper for IN operator"""
 
     def __init__(self, left, right, invert=False):
         super().__init__(left, 'IN', right, invert=invert)
@@ -351,9 +298,7 @@ class InOperator(BinaryOperator):
 
 
 class CASE(Expression):
-    """
-    CASE operator
-    """
+    """CASE operator"""
 
     def __init__(self):
         self.cases = []
@@ -368,9 +313,7 @@ class CASE(Expression):
         return self
 
     def case_to_sql(self, cond, value, connection, context):
-        """
-        Render a single case to SQL
-        """
+        """Render a single case to SQL"""
         assert self.cases, 'CASE operator must have at least one WHEN clause'
         cond_sql, cond_args = SQL.wrap(cond)._as_sql(connection, context)
         value_sql, value_args = SQL.wrap(value)._as_sql(connection, context)
@@ -398,3 +341,6 @@ class CASE(Expression):
 
 
 from .window import Window
+
+
+V = VariableFactory()
